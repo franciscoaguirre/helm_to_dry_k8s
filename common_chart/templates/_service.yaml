@@ -1,0 +1,22 @@
+{{- define "common.service" -}}
+{{- $common := dict "Values" .Values.common_chart -}}
+{{- $noCommon := omit .Values "common" -}}
+{{- $overrides := dict "Values" $noCommon -}}
+{{- $noValues := omit . "Values" -}}
+{{- with merge $noValues $overrides $common -}}
+apiVersion: v1
+kind: Service
+{{ include "common.metadata" . }}
+spec:
+  selector:
+    app: {{ .Values.name }}
+  ports:
+    {{- range .Values.ports }}
+    - name: {{ . | quote }}
+      port: {{ . }}
+      targetPort: {{ . }}
+    {{- end }}
+status:
+  loadBalancer: {}
+{{- end -}}
+{{- end -}}

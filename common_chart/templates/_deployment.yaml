@@ -1,0 +1,53 @@
+{{- define "common.deployment" -}}
+{{- $common := dict "Values" .Values.common_chart -}}
+{{- $noCommon := omit .Values "common" -}}
+{{- $overrides := dict "Values" $noCommon -}}
+{{- $noValues := omit . "Values" -}}
+{{- with merge $noValues $overrides $common -}}
+apiVersion: apps/v1
+kind: Deployment
+{{ include "common.metadata" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      containers:
+        - name: {{ .Values.name }}
+          image: "{{ .Values.image.url }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            {{- range .Values.ports }}
+            - containerPort: {{ . }}
+            {{- end }}
+          resources:
+            requests:
+              memory: {{ .Values.resources.requests.memory }}
+              cpu: {{ .Values.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.resources.limits.memory }}
+              cpu: {{ .Values.resources.limits.cpu }}
+          env:
+            {{- range .Values.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+          command:
+            {{- range .Values.command }}
+            - {{ . }}
+            {{- end }}
+          args:
+            {{- range .Values.args }}
+            - {{ . }}
+            {{- end }}
+      restartPolicy: {{ .Values.restartPolicy }}
+status: {}
+{{- end -}}
+{{- end -}}

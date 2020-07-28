@@ -1,0 +1,30 @@
+{{- define "common.job" -}}
+{{- $common := dict "Values" .Values.common -}}
+{{- $noCommon := omit .Values "common" -}}
+{{- $overrides := dict "Values" $noCommon -}}
+{{- $noValues := omit . "Values" -}}
+{{- with merge $noValues $overrides $common -}}
+apiVersion: batch/v1
+kind: Job
+{{ include "common.job_metadata" . }}
+spec:
+  template:
+    metadata:
+      name: {{ .Values.name }}
+      helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    spec:
+      restartPolicy: {{ .Values.restartPolicy }}
+      containers:
+        - name: {{ .Values.name }}-job
+          image: {{ .Values.image.url }}:{{ .Values.image.tag }}
+          env:
+            {{- range .Values.env }}
+            - name: {{ .name }}
+              value: {{ .value }}
+            {{- end }}
+          command:
+            {{- range .Values.command }}
+            - {{ . }}
+            {{ end }}
+{{- end -}}
+{{- end -}}

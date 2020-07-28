@@ -1,0 +1,12 @@
+{{- define "common.metadata" -}}
+metadata:
+  creationTimestamp: null
+  labels:
+    app: {{ .Values.name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+{{- end -}}
